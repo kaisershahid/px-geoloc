@@ -1,0 +1,16 @@
+{"servers": [
+	{
+		"url": "https://www.googleapis.com/geolocation/v1/geolocate?key=$_YOURKEY_$&address=${address}",
+		"type": "json",
+		"root": "results,0,geometry",
+		"lat": "lat",
+		"lng": "lng"
+	},
+	{
+		"url": "https://geocoder.cit.api.here.com/6.2/geocode.json?app_id=$_YOURAPPID_$&app_code=$_YOURAPPCODE_$&searchtext=${address}",
+		"type": "json",
+		"root": "Response,View,0,Result,0,Location,DisplayPosition",
+		"lat": "Latitude",
+		"lng": "Longitude"
+	}
+]}
