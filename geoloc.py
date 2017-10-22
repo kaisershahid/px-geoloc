@@ -33,7 +33,7 @@ class Geoloc:
 						lat = ptr[server['lat']]
 						lng = ptr[server['lng']]
 			except urllib2.HTTPError:
-				print ">> http error fetching %s: %s" % (url, str(sys.exc_info()[1]))
+				print "XX http error fetching %s: %s" % (url, str(sys.exc_info()[1]))
 					
 			if lat:
 				break

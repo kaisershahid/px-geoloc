@@ -124,7 +124,6 @@ class Http:
 
 	# Sends bytes to connection, making sure to check actual bytes transferred and returning when complete.
 	def raw_send(self, msg):
-		print "raw_send: %s" %msg
 		s0 = 0
 		s1 = len(msg)
 		while s0 < s1:

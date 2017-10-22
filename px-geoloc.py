@@ -59,7 +59,7 @@ try:
 	while 1:
 		(conn, addr) = sock.accept()
 		s = http.Http(conn)
-		print "IN << conn = ", conn, ", addr = ", addr
+		print "<< conn = ", conn, ", addr = ", addr
 
 		s.do_recv()
 		results = {}
