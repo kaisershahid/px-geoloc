@@ -4,8 +4,11 @@ Simple HTTP server that takes an address input and returns latitude and longitud
 
 Start the server: `python px-geoloc.py` (will bind to localhost:8081)
 
-Use the service: `curl localhost:8081?address=425+Market+St+%238%2C+San+Francisco%2C+CA+94105`
+Use the service:
 
+	curl localhost:8081?address=425+Market+St+%238%2C+San+Francisco%2C+CA+94105 # or
+	curl localhost:8081 -d"address=425 Market St #8, San Francisco, CA 94105" # returns
+	
 	{"status": "success", "lat": 37.79141, "lng": -122.39831, "address": "425 Market St #8, San Francisco, CA 94105"}
 
 ## Running Server
@@ -29,7 +32,7 @@ The order of the servers determines the precedence of service. Each server confi
 
 Currently, only services that return JSON are supported.
 
-`config.json` is pre-populated with Google and HERE geocoding services -- simply put in your API info to get started.
+`config.json` is pre-populated with MapQuest, Google, and HERE geocoding services -- simply put in your API info to get started.
 
 ## Using Geolocator
 

@@ -61,26 +61,33 @@ try:
 		s = http.Http(conn)
 		print "<< conn = ", conn, ", addr = ", addr
 
-		s.do_recv()
-		results = {}
-		address = None
-		if 'address' in s.params:
-			address = s.params['address'][0]
+		try:
+			s.do_recv()
+			results = {}
+			address = None
+			if 'address' in s.params:
+				address = s.params['address']
+			elif 'address' in s.post:
+				address = s.post['address']
+			if type(address) == list:
+				address = address[0]
 
-		if address == '' or address == None:
-			results['status'] = 'error'
-			results['message'] = 'address not supplied'
-		else:
-			results = locator.lookup(address)
+			if address == '' or address == None:
+				results['status'] = 'error'
+				results['message'] = 'address not supplied'
+			else:
+				results = locator.lookup(address)
 
-		results['address'] = address
-		js = json.dumps(results)
-		s.response_headers['Content-Type'] = 'application/json'
-		s.response_headers['Content-Length'] = len(js)
-		s.do_send(js)
+			results['address'] = address
+			js = json.dumps(results)
+			s.response_headers['Content-Type'] = 'application/json'
+			s.response_headers['Content-Length'] = len(js)
+			s.do_send(js)
 
-		conn.shutdown(socket.SHUT_RDWR)
-		conn.close()
+			conn.shutdown(socket.SHUT_RDWR)
+			conn.close()
+		except socket.error:
+			pass
 except KeyboardInterrupt:
 	sock.close()
 	print "exiting..."

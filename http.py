@@ -1,5 +1,6 @@
 import re
 import urlparse
+import select
 
 # Lightweight HTTP wrapper to interact with a raw socket. Assumes well-formed request.
 # @todo there's some oddity with chunked transfer--the initial byte length of the first chunk never seems to make it back to client
@@ -13,6 +14,7 @@ class Http:
 		self.headers_out = {}
 		self.status = 200
 		self.qs_params = {}
+		self.post = {}
 		self.body = ''
 		self.commit = False
 		self.limit = -1
@@ -29,7 +31,7 @@ class Http:
 
 		# collect all headers until LINE2 encountered or empty chunk
 		while stop == False:
-			chunk = self.sock.recv(512)
+			chunk = self.sock.recv(2048)
 			chunks += chunk
 			if re.search(Http.LINE2, chunks) or chunk == '':
 				stop = True
@@ -41,6 +43,7 @@ class Http:
 
 		# set headers
 		hinit = False
+		expect = False
 		for line in lines:
 			# First line of headers, parse out method, path, protocol
 			if hinit == False:
@@ -60,13 +63,43 @@ class Http:
 			else:
 				kv = re.split(":\s*", line, 1)
 				if len(kv) == 2:
-					self.headers_in[kv[0]] = kv[1]
+					if kv[0] == 'Expect':
+						expect = True
+					else:
+						self.headers_in[kv[0]] = kv[1]
 
 		if self.headers_in['Querystring'] != '':
 			self.qs_params = urlparse.parse_qs(self.headers_in['Querystring'], True)
 
-		# @todo process rest of body?
-		self.body = body
+		# process multipart data
+		if 'Content-Type' in self.headers_in:
+			clen = int(self.headers_in['Content-Length'])
+			ctype = self.headers_in['Content-Type']
+
+			if ctype == 'application/x-www-form-urlencoded':
+				vals = ctype.split('; ')
+				lbody = len(body)
+				if lbody < clen:
+					if expect: self.raw_send("HTTP/1.1 100 Continue\r\n")
+					print ".. getting more body %s/%s" % (len(body), clen)
+					chunk = self.sock.recv(2048)
+					body += chunk
+					lbody += len(chunk)
+					while lbody < clen:
+						chunk = self.sock.recv(2048)
+						body += chunk
+						lbody += len(chunk)
+				print ">>%s"%body
+				# if vals[0] == 'multipart/form-data':
+				# 	# bk, boundary = vals[1].split('=', 1)
+				# 	# lines = body.split(Http.LINE_SPLIT)
+
+				# 	# for line in lines:
+				# 	# 	if line == boundary:
+				# 	# 		print "boundary!"
+				# else:
+				self.post = urlparse.parse_qs(body, True)
+				print "post=%s"%self.post
 
 	@property
 	def request_headers(self):
@@ -77,9 +110,15 @@ class Http:
 	def response_headers(self):
 		return self.headers_out
 
+	# Returns querystring parameters.
 	@property
 	def params(self):
 		return self.qs_params
+
+	# Returns POST form data.
+	@property
+	def post(self):
+		return self.post
 
 	# Set status for response.
 	def set_status(self, status):
@@ -128,6 +167,7 @@ class Http:
 		s1 = len(msg)
 		while s0 < s1:
 			s0 += self.sock.send(msg[s0:s1])
+		return s0
 
 class TestSock:
 	def __init__(self):

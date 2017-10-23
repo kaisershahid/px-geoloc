@@ -1,5 +1,12 @@
 {"servers": [
 	{
+		"url": "http://www.mapquestapi.com/geocoding/v1/address?key=$_YOURKEY_$&location=${address}&outFormat=json",
+		"type": "json",
+		"root": "results,0,locations,0,latLng",
+		"lat": "lat",
+		"lng": "lng"
+	},
+	{
 		"url": "https://www.googleapis.com/geolocation/v1/geolocate?key=$_YOURKEY_$&address=${address}",
 		"type": "json",
 		"root": "results,0,geometry",
